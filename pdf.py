@@ -196,8 +196,7 @@ def increment_y(c, y, height, style, line_spacing):
     return y
 
 def render_resume_pdf(resume: Resume, style_name="modern", photo_base_path="photos"):
-    # style = get_style(style_name)
-    style = get_style("Classic")
+    style = get_style(style_name)
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
