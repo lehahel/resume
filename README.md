@@ -1,4 +1,4 @@
-# FastAPI Backend
+# FastAPI Backend (vibecoded in 3h)
 
 A modern FastAPI backend application with basic setup and configuration.
 
