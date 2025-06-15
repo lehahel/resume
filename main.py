@@ -327,14 +327,51 @@ async def update_resume(id: str = Path(...), resume_update: ResumeUpdate = None,
         raise HTTPException(status_code=404, detail="Resume not found")
 
     update_data = resume_update.dict(exclude_unset=True)
+    
+    # Handle work experiences update
+    if "workExperiences" in update_data:
+        # Delete existing work experiences
+        db.query(DBWorkExperience).filter(DBWorkExperience.resume_id == id).delete()
+        
+        # Add new work experiences
+        for we in update_data["workExperiences"]:
+            db_we = DBWorkExperience(
+                organization=we.get("organization"),
+                position=we.get("workExpPosition"),
+                startDate=we.get("startDate"),
+                endDate=we.get("endDate"),
+                responsibilities=we.get("responsibilities"),
+                resume_id=id
+            )
+            db.add(db_we)
+        del update_data["workExperiences"]
+
+    # Handle educations update
+    if "educations" in update_data:
+        # Delete existing educations
+        db.query(DBEducation).filter(DBEducation.resume_id == id).delete()
+        
+        # Add new educations
+        for edu in update_data["educations"]:
+            db_edu = DBEducation(
+                institution=edu.get("institution"),
+                faculty=edu.get("faculty"),
+                specialty=edu.get("specialty"),
+                graduationYear=edu.get("graduationYear"),
+                studyForm=edu.get("studyForm"),
+                resume_id=id
+            )
+            db.add(db_edu)
+        del update_data["educations"]
+
+    # Update other fields
     for field, value in update_data.items():
-        if field == "workExperiences" or field == "educations":
-            continue  # Nested updates not handled here
         setattr(db_resume, field, value)
+    
     db.commit()
     db.refresh(db_resume)
 
-    # Fetch related work experiences and educations
+    # Fetch with relationships
     work_experiences = db.query(DBWorkExperience).filter(DBWorkExperience.resume_id == db_resume.id).all()
     educations = db.query(DBEducation).filter(DBEducation.resume_id == db_resume.id).all()
 
