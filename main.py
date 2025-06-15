@@ -175,11 +175,11 @@ async def logout():
     response.delete_cookie(key="access_token")
     return response
 
-@app.get("/api/Auth/check")
+@app.get("/api/Auth/check", response_model=UserResponse)
 async def check_auth(user=Depends(get_current_user)):
     if not user:
         raise HTTPException(status_code=401, detail="User is not authorized")
-    return {"username": user.name}
+    return UserResponse(user=UserData.model_validate(user))
 
 
 @app.put("/api/Resume/{id}/photo")
