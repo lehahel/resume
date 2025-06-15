@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 from fastapi import Response, Request
 from io import BytesIO
 
-from database import get_db, User, Resume, WorkExperience as DBWorkExperience, Education as DBEducation
+from database import get_db, User, Resume, WorkExperience as DBWorkExperience, Education as DBEducation, ResumePhoto
 from security import get_password_hash, verify_password
 from pydantic import BaseModel, EmailStr, Field
 from auth import create_access_token, get_current_user
@@ -72,6 +72,7 @@ class Education(BaseModel):
     studyForm: str
 
 class ResumeRequest(BaseModel):
+    id: Optional[str] = None
     title: str
     theme: Optional[str] = None
     isPublic: bool
@@ -181,26 +182,38 @@ async def check_auth(user=Depends(get_current_user)):
         raise HTTPException(status_code=401, detail="User is not authorized")
     return UserResponse(user=UserData.model_validate(user))
 
-
 @app.put("/api/Resume/{id}/photo")
 async def upload_resume_photo(id: str, PhotoFile: UploadFile = File(...), user=Depends(get_current_user), db: Session = Depends(get_db)):
-    db_resume = db.query(Resume).filter(Resume.id == id, Resume.user_id == user.id).first()
-    if not db_resume:
-        raise HTTPException(status_code=404, detail="Resume not found")
     os.makedirs("photos", exist_ok=True)
     filename = f"{id}_{PhotoFile.filename}"
     file_location = os.path.join("photos", filename)
+    
     with open(file_location, "wb") as f:
         content = await PhotoFile.read()
         f.write(content)
-    # Save only the filename to the database
-    db_resume.photo = filename
+    
+    # Create or update photo record
+    db_photo = db.query(ResumePhoto).filter(ResumePhoto.resume_id == id).first()
+    if db_photo:
+        # Delete old file if it exists
+        old_file_path = os.path.join("photos", db_photo.filename)
+        if os.path.exists(old_file_path):
+            os.remove(old_file_path)
+        db_photo.filename = filename
+    else:
+        db_photo = ResumePhoto(
+            filename=filename,
+            resume_id=id
+        )
+        db.add(db_photo)
+    
     db.commit()
     return {"detail": "Photo uploaded successfully", "filename": filename}
 
 @app.post("/api/Resume")
 async def create_resume(resume: ResumeRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
     db_resume = Resume(
+        id=resume.id if resume.id else None,  # Use provided ID or let SQLAlchemy generate one
         user_id=user.id,
         title=resume.title,
         theme=resume.theme,
@@ -446,13 +459,15 @@ async def get_resume_pdf(id: str, db: Session = Depends(get_db), user=Depends(ge
     })
 
 @app.get("/api/Resume/{id}/photo")
-async def get_resume_photo(id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    db_resume = db.query(Resume).filter(Resume.id == id, Resume.user_id == user.id).first()
-    if not db_resume or not db_resume.photo:
+async def get_resume_photo(id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):    
+    db_photo = db.query(ResumePhoto).filter(ResumePhoto.resume_id == id).first()
+    if not db_photo:
         raise HTTPException(status_code=404, detail="Photo not found")
-    file_path = os.path.join("photos", db_resume.photo)
+    
+    file_path = os.path.join("photos", db_photo.filename)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Photo file not found")
+    
     return FileResponse(file_path, media_type="image/jpeg", filename=os.path.basename(file_path))
 
 if __name__ == "__main__":

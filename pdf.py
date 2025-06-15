@@ -210,9 +210,9 @@ def render_resume_pdf(resume: Resume, style_name="modern", photo_base_path="phot
         c.setFillColor(style.text_color)  # Reset fill color back to text color
 
     # Фото
-    if resume.photo and style.photo_config:
+    if hasattr(resume, 'photo') and resume.photo and style.photo_config:
         try:
-            photo_path = resume.photo
+            photo_path = resume.photo.filename
             if not os.path.isabs(photo_path):
                 photo_path = os.path.join(photo_base_path, photo_path.lstrip("/"))
             if os.path.exists(photo_path):

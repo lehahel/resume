@@ -49,9 +49,9 @@ class Resume(Base):
     driverLicenses = Column(String, nullable=True)
     hasMedicalBook = Column(Boolean, nullable=True)
     personalQualities = Column(String, nullable=True)
-    photo = Column(String, nullable=True)
     work_experiences = relationship("WorkExperience", back_populates="resume", cascade="all, delete-orphan")
     educations = relationship("Education", back_populates="resume", cascade="all, delete-orphan")
+    photo = relationship("ResumePhoto", back_populates="resume", uselist=False)
 
 class WorkExperience(Base):
     __tablename__ = "work_experiences"
@@ -102,6 +102,15 @@ class ResumeRequest(Base):
     theme = Column(String, nullable=True)
     languages = Column(String, nullable=True)
     personalQualities = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+class ResumePhoto(Base):
+    __tablename__ = "resume_photos"
+    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
+    filename = Column(String, nullable=False)
+    resume_id = Column(String, ForeignKey("resumes.id"), nullable=True)
+    resume = relationship("Resume", back_populates="photo")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
