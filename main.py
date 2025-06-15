@@ -175,6 +175,13 @@ async def logout():
     response.delete_cookie(key="access_token")
     return response
 
+@app.get("/api/Auth/check")
+async def check_auth(user=Depends(get_current_user)):
+    if not user:
+        raise HTTPException(status_code=401, detail="User is not authorized")
+    return {"username": user.name}
+
+
 @app.put("/api/Resume/{id}/photo")
 async def upload_resume_photo(id: str, PhotoFile: UploadFile = File(...), user=Depends(get_current_user), db: Session = Depends(get_db)):
     db_resume = db.query(Resume).filter(Resume.id == id, Resume.user_id == user.id).first()
