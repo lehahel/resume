@@ -73,30 +73,31 @@ class Education(BaseModel):
 
 class ResumeRequest(BaseModel):
     title: str
-    theme: str = 'modern'
+    theme: Optional[str] = None
     isPublic: bool
     lastName: str
     firstName: str
-    middleName: str
+    middleName: Optional[str] = None
     birthDate: datetime
-    phoneNumber: str
+    phoneNumber: Optional[str] = None
     email: str
     position: str
     employment: str
-    desiredSalary: int
+    desiredSalary: Optional[int] = None
     workSchedule: str
-    isReadyForTrips: bool
+    noPatronymic: Optional[bool] = False
+    isReadyForTrips: Optional[bool] = False
     city: str
-    canRelocate: bool
+    canRelocate: Optional[bool] = None
     citizenship: str
-    gender: str
-    hasChildren: bool
-    workExperiences: List[WorkExperience]
-    educations: List[Education]
-    languages: str
-    driverLicenses: str
-    hasMedicalBook: bool
-    personalQualities: str
+    gender: Optional[str] = "Мужской"
+    hasChildren: Optional[bool] = False
+    workExperiences: Optional[List[WorkExperience]] = []
+    educations: Optional[List[Education]] = []
+    languages: Optional[str] = None
+    driverLicenses: Optional[str] = None
+    hasMedicalBook: Optional[bool] = False
+    personalQualities: Optional[str] = None
 
 class WorkExperienceUpdate(BaseModel):
     organization: Optional[str] = None

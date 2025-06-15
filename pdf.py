@@ -279,6 +279,8 @@ def render_resume_pdf(resume: Resume, style_name="modern", photo_base_path="phot
         c.line(style.margin_left, height - y, width - style.margin_right, height - y)
         c.setStrokeColor(style.text_color)  # Reset stroke color back to text color
 
+    y = max(y, 100 + style.line_spacing)
+
     # Add padding for section borders if enabled
     border_padding = 10 if style.decoration_config.draw_section_borders else 0
 
@@ -595,110 +597,110 @@ def render_resume_pdf(resume: Resume, style_name="modern", photo_base_path="phot
             c.setFont(style.normal_font[0], style.normal_font[1])
             c.setFillColor(style.text_color)
 
-    if resume.work_experiences:
-        section_start_y = y
-        
-        c.setFont(style.section_font[0], style.section_font[1])
-        c.setFillColor(style.title_color)
-        c.drawString(style.margin_left + border_padding, height - y - style.line_spacing, "Опыт работы")
-        y += style.line_spacing
-        
-        c.setFont(style.normal_font[0], style.normal_font[1])
-        c.setFillColor(style.text_color)
-        
-        for exp in resume.work_experiences:
-            period = f"с {exp.startDate.strftime('%m.%Y')} по {exp.endDate.strftime('%m.%Y') if exp.endDate else 'настоящее время'}"
-            c.drawString(style.margin_left + border_padding, height - y - style.line_spacing, 
-                        f"{exp.organization} - {exp.position} ({period})")
-            y += style.line_spacing
-            
-            if exp.responsibilities:
-                c.drawString(style.margin_left + border_padding + 10, height - y - style.line_spacing,
-                           exp.responsibilities)
-                y += style.line_spacing * 1.5
-            
-            y += style.line_spacing * 0.5
-            
-            if y > height - 100:
-                if style.decoration_config.draw_section_borders:
-                    section_height = y - section_start_y + border_padding
-                    if section_height > 0:
-                        c.setStrokeColor(style.decoration_config.border_color)
-                        c.rect(style.margin_left, height - section_start_y, 
-                              width - style.margin_left - style.margin_right, -section_height)
-                        c.setStrokeColor(style.text_color)
-                
-                c.showPage()
-                y = style.margin_top
-                c.setFont(style.normal_font[0], style.normal_font[1])
-                c.setFillColor(style.text_color)
-                section_start_y = y
-        
-        if style.decoration_config.draw_section_borders:
-            section_height = y - section_start_y + border_padding
-            if section_height > 0:
-                c.setStrokeColor(style.decoration_config.border_color)
-                c.rect(style.margin_left, height - section_start_y,
-                      width - style.margin_left - style.margin_right, -section_height)
-                c.setStrokeColor(style.text_color)
-        
-        y += style.line_spacing
+        if resume.work_experiences:
+            section_start_y = y
 
-    if resume.educations:
-        section_start_y = y
-        
-        c.setFont(style.section_font[0], style.section_font[1])
-        c.setFillColor(style.title_color)
-        c.drawString(style.margin_left + border_padding, height - y - style.line_spacing, "Образование")
-        y += style.line_spacing
-        
-        c.setFont(style.normal_font[0], style.normal_font[1])
-        c.setFillColor(style.text_color)
-        
-        for idx, edu in enumerate(resume.educations):
-            c.drawString(style.margin_left + border_padding, height - y - style.line_spacing,
-                        f"{edu.institution} - {edu.specialty} ({edu.graduationYear})")
+            c.setFont(style.section_font[0], style.section_font[1])
+            c.setFillColor(style.title_color)
+            c.drawString(style.margin_left + border_padding, height - y - style.line_spacing, "Опыт работы")
             y += style.line_spacing
-            
-            if edu.faculty:
-                c.drawString(style.margin_left + border_padding + 10, height - y - style.line_spacing,
-                           f"Факультет: {edu.faculty}")
-                y += style.line_spacing
-                
-            if edu.studyForm:
-                c.drawString(style.margin_left + border_padding + 10, height - y - style.line_spacing,
-                           f"Форма обучения: {edu.studyForm}")
-                y += style.line_spacing
-                
-            y += style.line_spacing * 0.5
 
-            if idx == len(resume.educations) - 1:
-                continue
-            
-            if y > height - 100:
-                if style.decoration_config.draw_section_borders:
-                    section_height = y - section_start_y + border_padding
-                    if section_height > 0:
-                        c.setStrokeColor(style.decoration_config.border_color)
-                        c.rect(style.margin_left, height - section_start_y,
-                              width - style.margin_left - style.margin_right, -section_height)
-                        c.setStrokeColor(style.text_color)
+            c.setFont(style.normal_font[0], style.normal_font[1])
+            c.setFillColor(style.text_color)
+
+            for exp in resume.work_experiences:
+                period = f"с {exp.startDate.strftime('%m.%Y')} по {exp.endDate.strftime('%m.%Y') if exp.endDate else 'настоящее время'}"
+                c.drawString(style.margin_left + border_padding, height - y - style.line_spacing, 
+                            f"{exp.organization} - {exp.position} ({period})")
+                y += style.line_spacing
+
+                if exp.responsibilities:
+                    c.drawString(style.margin_left + border_padding + 10, height - y - style.line_spacing,
+                               exp.responsibilities)
+                    y += style.line_spacing * 1.5
+
+                y += style.line_spacing * 0.5
+
+                if y > height - 100:
+                    if style.decoration_config.draw_section_borders:
+                        section_height = y - section_start_y + border_padding
+                        if section_height > 0:
+                            c.setStrokeColor(style.decoration_config.border_color)
+                            c.rect(style.margin_left, height - section_start_y, 
+                                  width - style.margin_left - style.margin_right, -section_height)
+                            c.setStrokeColor(style.text_color)
+
+                    c.showPage()
+                    y = style.margin_top
+                    c.setFont(style.normal_font[0], style.normal_font[1])
+                    c.setFillColor(style.text_color)
+                    section_start_y = y
+
+            if style.decoration_config.draw_section_borders:
+                section_height = y - section_start_y + border_padding
+                if section_height > 0:
+                    c.setStrokeColor(style.decoration_config.border_color)
+                    c.rect(style.margin_left, height - section_start_y,
+                          width - style.margin_left - style.margin_right, -section_height)
+                    c.setStrokeColor(style.text_color)
+
+            y += style.line_spacing
+
+        if resume.educations:
+            section_start_y = y
+
+            c.setFont(style.section_font[0], style.section_font[1])
+            c.setFillColor(style.title_color)
+            c.drawString(style.margin_left + border_padding, height - y - style.line_spacing, "Образование")
+            y += style.line_spacing
+
+            c.setFont(style.normal_font[0], style.normal_font[1])
+            c.setFillColor(style.text_color)
+
+            for idx, edu in enumerate(resume.educations):
+                c.drawString(style.margin_left + border_padding, height - y - style.line_spacing,
+                            f"{edu.institution} - {edu.specialty} ({edu.graduationYear})")
+                y += style.line_spacing
+
+                if edu.faculty:
+                    c.drawString(style.margin_left + border_padding + 10, height - y - style.line_spacing,
+                               f"Факультет: {edu.faculty}")
+                    y += style.line_spacing
+
+                if edu.studyForm:
+                    c.drawString(style.margin_left + border_padding + 10, height - y - style.line_spacing,
+                               f"Форма обучения: {edu.studyForm}")
+                    y += style.line_spacing
+
+                y += style.line_spacing * 0.5
+
+                if idx == len(resume.educations) - 1:
+                    continue
                 
-                c.showPage()
-                y = style.margin_top
-                c.setFont(style.normal_font[0], style.normal_font[1])
-                c.setFillColor(style.text_color)
-                section_start_y = y
-        
-        if style.decoration_config.draw_section_borders:
-            section_height = y - section_start_y + border_padding
-            if section_height > 0:
-                c.setStrokeColor(style.decoration_config.border_color)
-                c.rect(style.margin_left, height - section_start_y,
-                      width - style.margin_left - style.margin_right, -section_height)
-                c.setStrokeColor(style.text_color)
-        
-        y += style.line_spacing
+                if y > height - 100:
+                    if style.decoration_config.draw_section_borders:
+                        section_height = y - section_start_y + border_padding
+                        if section_height > 0:
+                            c.setStrokeColor(style.decoration_config.border_color)
+                            c.rect(style.margin_left, height - section_start_y,
+                                  width - style.margin_left - style.margin_right, -section_height)
+                            c.setStrokeColor(style.text_color)
+
+                    c.showPage()
+                    y = style.margin_top
+                    c.setFont(style.normal_font[0], style.normal_font[1])
+                    c.setFillColor(style.text_color)
+                    section_start_y = y
+
+            if style.decoration_config.draw_section_borders:
+                section_height = y - section_start_y + border_padding
+                if section_height > 0:
+                    c.setStrokeColor(style.decoration_config.border_color)
+                    c.rect(style.margin_left, height - section_start_y,
+                          width - style.margin_left - style.margin_right, -section_height)
+                    c.setStrokeColor(style.text_color)
+
+            y += style.line_spacing
 
     ######
 
